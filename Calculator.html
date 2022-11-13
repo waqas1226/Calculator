@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <title>Calculator</title>
+<style>
+   body{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+   }
+.Calculator{background:black;width:228px;border:2px solid silver;}
+.button{
+background-image: radial-gradient(white 10%, grey);
+height:50px; width:50px;
+border:1px solid black; margin:2px;
+}
+.operator,.bkspaceclr{background-image: radial-gradient( white 25%, silver 10%);} 
+.bkspaceclr{width:108px;}
+#lcd{height:50px;width:222px;border:2px solid black;margin:2px;background:silver;
+text-align:right;line-height: 2.5; font-size: 30px;} 
+</style></head>
+<body>
+<div class="Calculator">
+<div id="lcd"> </div>
+<div>
+<button type="button" class="button bkspaceclr" id="clrbt" onclick="clr()">C</button>
+<button type="button" class="button bkspaceclr" id="bkspace" onclick="bkspace()"><<</ </button>
+</div>
+<div>
+<button type="button" class="button" id="7" onclick="decimalsFunc(this.id)" >7</button>
+<button type="button" class="button" id="8" onclick="decimalsFunc(this.id)" >8</button>
+<button type="button" class="button" id="9" onclick="decimalsFunc(this.id)" >9</button>
+<button type="button" class="button operator" id="/" onclick="handleOperatorBtnClick(this.id)" >/</button>
+</div>
+<div>
+<button type="button" class="button" id="4" onclick="decimalsFunc(this.id)">4</button>
+<button type="button" class="button" id="5" onclick="decimalsFunc(this.id)">5</button>
+<button type="button" class="button" id="6" onclick="decimalsFunc(this.id)">6</button>
+<button type="button" class="button operator" id="*" onclick="handleOperatorBtnClick(this.id)">*</button>
+</div>
+<div>
+<button type="button" class="button" id="1" onclick="decimalsFunc(this.id)">1</button>
+<button type="button" class="button" id="2" onclick="decimalsFunc(this.id)">2</button>
+<button type="button" class="button" id="3" onclick="decimalsFunc(this.id)">3</button>
+<button type="button" class="button operator" id="-" onclick="handleOperatorBtnClick(this.id)">-</button>
+</div>
+<div>
+<button type="button" class="button" id="0" onclick="decimalsFunc(this.id)">0</button>
+<button type="button" class="button" id="." onclick="decimalsFunc(this.id)">.</button>
+<button type="button" class="button operator" id="+" onclick="handleOperatorBtnClick(this.id)">+</button>
+<button type="button" class="button operator" id="eql" onclick="equal()">=</button>
+</div>
+</div>
+
+<script>
+decimals=[0,1,2,3,4,5,6,7,8,9];
+numbers=[];
+allNumbers=[];
+OpButtons=[];
+bkspacedl=[];
+let bt=0;
+let lcdText=0;
+let newNumberk=0;
+
+//handle operation on buttons click with decimals numbers
+function decimalsFunc(btnId) 
+{
+if(btnId==".")
+{
+bt=numbers.length;
+}
+else{ 
+let y=decimals[btnId]; 
+numbers.push(y);//storing  
+}
+lcdText=document.getElementById("lcd").innerText;
+if (lcdText.length>=13)
+{lcdText=lcdText.slice(1,lcdText.length);} //lcd text overflow handle
+lcdText+=btnId;
+document.getElementById("lcd").innerText=lcdText;
+}
+
+
+function handleOperatorBtnClick(opBtnId)
+{
+let l=numbers.length; 
+newNumber=0;
+//at one side of arithmatic operator,making complete decimal number from clicked button IDs according to weightage,
+for(let i=1;i<=l;i++)
+{
+let calculated=Math.pow(10,(l-i))*numbers[i-1];
+newNumber+=calculated;
+} 
+
+//handle last '.' click
+if (bt!==0) 
+{
+newNumber=newNumber/10**(l-bt);
+}
+bt=0;
+allNumbers.push(newNumber);
+bkspacedl.push(numbers);
+//alert(bkspacedl.length);
+numbers=[];
+OpButtons.push(opBtnId);
+lcdText=document.getElementById("lcd").innerText;
+if (lcdText.length>=13)
+{lcdText=lcdText.slice(1,lcdText.length);} 
+lcdText+=opBtnId;
+document.getElementById("lcd").innerText=lcdText;
+}
+
+function equal() 
+{
+let l=numbers.length; 
+let ind=0;
+let result=0;
+let arthSym=0;
+let xxx=0;
+newNumber=0;
+
+//Check, and Show error on wrong writtings
+let h=lcdText.length;
+let c=lcdText.slice(-1);
+for (let o=0;o<h;o++)
+{
+let v=lcdText.slice(o, o+1);
+if (v=="+"||v=="-"||v=="/"||v=="*") 
+{arthSym++;
+if (arthSym==2) //check if arithmatic operator symbul written more then 1 
+{xxx=arthSym;}
+} 
+else
+{arthSym=0;} 
+}
+if (c=="+"||c=="-"||c=="/"||c=="*"||xxx==2) 
+{
+document.getElementById("lcd").innerText='Error';
+}
+else{
+//at end side of arithmatic operator,making complete decimal number from clicked button IDs according to weightage,
+
+for(let i=1;i<=l;i++)
+{
+let calculated=Math.pow(10,(l-i))*numbers[i-1];
+newNumber+=calculated;
+} 
+//alert(newNumber);
+if (bt!==0) 
+{
+newNumber=newNumber/10**(l-bt);
+}
+allNumbers.push(newNumber);
+
+//Final calculation according to arithmatic operations priority
+for (let j=0;j<=10;j++)
+{
+if (OpButtons.includes("*"))//1st priority
+{
+ind=OpButtons.indexOf("*");
+allNumbers[ind+1]=allNumbers[ind]*allNumbers[ind+1];
+clearLowIndNumber();
+}
+else if (OpButtons.includes("/"))//2nd priority
+{
+ind=OpButtons.indexOf("/");
+allNumbers[ind+1]=allNumbers[ind]/allNumbers[ind+1];
+clearLowIndNumber();
+}
+else if (OpButtons.includes("+"))// 3rd priority
+{
+ind=OpButtons.indexOf("+");
+allNumbers[ind+1]=allNumbers[ind]+allNumbers[ind+1];
+clearLowIndNumber();
+}
+else if (OpButtons.includes("-"))// 4th priority
+{
+ind=OpButtons.indexOf("-");
+allNumbers[ind+1]=allNumbers[ind]-allNumbers[ind+1];
+clearLowIndNumber();
+}
+}//for loop end
+
+numbers=[];
+allNumbers=[];
+OpButtons=[];
+result=""+result;
+if (result.length>=13)
+{result=result.slice(0,13); } 
+document.getElementById("lcd").innerText=result;
+}
+
+//clear low indexed number and related operator
+function clearLowIndNumber() 
+{
+result=allNumbers[ind+1];
+allNumbers.splice(ind, 1);
+OpButtons.splice(ind, 1);
+//alert(g);
+} 
+}
+
+function bkspace() 
+{
+let text=document.getElementById("lcd").innerText;
+lcdText= text.slice(0, -1); 
+document.getElementById("lcd").innerText=lcdText;
+
+let ll=text.slice(-1);
+if(ll=='*'||ll=='+'||ll=='-'||ll=='/')
+{
+OpButtons.pop();
+allNumbers.pop();
+numbers=bkspacedl[OpButtons.length];
+
+}
+else 
+{
+numbers.pop();
+}
+} 
+
+//Pressing 'C' to clear
+function clr() 
+{
+document.getElementById("lcd").innerText="";
+numbers=[];
+allNumbers=[];
+OpButtons=[];
+bkspacedl=[];
+bt=0;
+} 
+</script>
+</body>
+</html>
